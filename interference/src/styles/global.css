@@ -1,0 +1,48 @@
+
+:root {
+  --color-black: #000;
+  --color-white: #fff;
+
+  --color-gray: #393b3c;
+  --color-second-gray: #747474;
+
+  --color-accent: #076212;
+  --color-second-accent: #cd9a01;
+
+  --small-indent: 1rem;
+  --middle-indent: 24px;
+  --big-indent: 56px;
+  --border-rad: 2rem;
+}
+
+* {
+  box-sizing: border-box;
+  outline-color: var(--color-second-accent);
+  /* border: 2px solid rgba(4, 175, 4, 0.568); */
+}
+
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+  padding: 0;
+  color: #747474;
+}
+label{
+  color: #565555;
+}
+/* #modal{
+  position: fixed;
+  width: 1vw;
+  height: 1vh;
+  
+} */
+body {
+  background-color: var(--color-black);
+}
+.frame {
+  width: 100%;
+  padding: 0 5.56%;
+}
