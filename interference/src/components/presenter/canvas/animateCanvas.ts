@@ -8,7 +8,8 @@ export function animateCanvas(
   width: number,
   height: number,
   showSources: boolean,
-  dt: number
+  dt: number,
+  highlightedSources: boolean[]
 ) {
   const canvas = canvasRef.current;
   const context = canvas?.getContext("2d");
@@ -42,9 +43,13 @@ export function animateCanvas(
     }
   }
 
-  if (showSources) {
-    sources.forEach((source) => source.draw(imageData));
-  }
+  sources.forEach((source, i) => {
+    source.createField(fields[i], tRef.current);
+
+    if (showSources) {
+      source.draw(imageData, highlightedSources[i]); 
+    }
+  });
   context.putImageData(imageData, 0, 0);
   tRef.current += dt;
 }

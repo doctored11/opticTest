@@ -78,11 +78,11 @@ export class PointSource {
           let moment = this.D[x][y] - shift + phaseAdd;
           moment = moment >= 0 ? moment : moment + MaxI;
           moment = moment < MaxI ? moment : moment - MaxI;
-          const intensity = this.S[moment]; 
+          const intensity = this.S[moment];
 
-          f[x][y] = intensity; 
+          f[x][y] = intensity;
         } else {
-          f[x][y] = 0; 
+          f[x][y] = 0;
         }
       }
     }
@@ -90,7 +90,7 @@ export class PointSource {
 
   getColorForWavelength(wavelength: number): [number, number, number] {
     if (wavelength < 370 || wavelength > 750) {
-      return [255, 255, 255]; 
+      return [255, 255, 255];
     }
 
     const interpolateColor = (
@@ -131,12 +131,15 @@ export class PointSource {
         const previousRange = rangesArray[i - 1];
 
         if (wavelength <= range.target && previousRange) {
-          const factor = (wavelength - previousRange.target) / (range.target - previousRange.target);
+          const factor =
+            (wavelength - previousRange.target) /
+            (range.target - previousRange.target);
           return interpolateColor(previousRange.color, range.color, factor);
         }
 
         if (wavelength > range.target && nextRange) {
-          const factor = (wavelength - range.target) / (nextRange.target - range.target);
+          const factor =
+            (wavelength - range.target) / (nextRange.target - range.target);
           return interpolateColor(range.color, nextRange.color, factor);
         }
 
@@ -147,14 +150,41 @@ export class PointSource {
     return [255, 255, 255];
   }
 
-  draw(imageData: ImageData) {
+  draw(imageData: ImageData, isSelect = false) {
     const pixels = imageData.data;
-    let index = 4 * (this.spreadWidth * this.y + this.x - this.radius);
-    for (let j = 4 * (2 * this.radius - 1); j >= 0; j -= 4) {
-      pixels[index + j] = 255; 
-      pixels[index + j + 1] = 0; 
-      pixels[index + j + 2] = 0; 
-      pixels[index + j + 3] = 255; 
+
+    
+    const verticalStripWidth = 5;
+    for (let i = -verticalStripWidth; i <= verticalStripWidth; i ++) {
+      const dx = this.x + i;
+      const dy = this.y;
+      if (dx >= 0 && dx < imageData.width && dy >= 0 && dy < imageData.height) {
+        const idx = 4 * (dy * imageData.width + dx);
+        pixels[idx] = 255; 
+        pixels[idx + 1] = 0; 
+        pixels[idx + 2] = 0; 
+        pixels[idx + 3] = 255; 
+      }
+    }
+
+    if (isSelect) {
+      const horizontalStripWidth = 5;
+      for (let i = -horizontalStripWidth; i <= horizontalStripWidth; i ++) {
+        const dx = this.x;
+        const dy = this.y + i;
+        if (
+          dx >= 0 &&
+          dx < imageData.width &&
+          dy >= 0 &&
+          dy < imageData.height
+        ) {
+          const idx = 4 * (dy * imageData.width + dx);
+          pixels[idx] = 0; 
+          pixels[idx + 1] = 255; 
+          pixels[idx + 2] = 0; 
+          pixels[idx + 3] = 255; 
+        }
+      }
     }
   }
 }

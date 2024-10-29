@@ -8,12 +8,14 @@ interface CanvasProps {
   sourceCount: number;
   showSources: boolean;
   running: boolean;
+  highlightedSources: boolean[]; 
 }
 
 const Canvas: React.FC<CanvasProps> = ({
   sourceCount,
   showSources,
   running,
+  highlightedSources
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -46,7 +48,8 @@ const Canvas: React.FC<CanvasProps> = ({
         CANVAS_WIDTH,
         CANVAS_HEIGHT,
         showSources,
-        DT
+        DT,
+        highlightedSources
       );
       if (running) {
         animationRef.current = requestAnimationFrame(animate);
@@ -63,7 +66,7 @@ const Canvas: React.FC<CanvasProps> = ({
         animationRef.current = undefined;
       }
     };
-  }, [running, showSources]);
+  }, [running, showSources,highlightedSources]);
 
   return <canvas ref={canvasRef}></canvas>;
 };
