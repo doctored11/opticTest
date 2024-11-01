@@ -1,17 +1,21 @@
+import { sources } from "webpack";
+
 export class PointSource {
   x: number;
   y: number;
   wavelength: number;
   phase: number;
+  startPhase: number;
   radius: number;
   S: number[];
   D: number[][];
   scaleFactor: number;
   spreadWidth: number;
   spreadHeight: number;
-  expansionRate: number;
+  expansionRate: number = 0.5;
   maxRadius: number;
   color: [number, number, number];
+  isEnabled: boolean = true;
 
   constructor(
     x: number,
@@ -23,8 +27,7 @@ export class PointSource {
     sourcesCount: number,
     scaleFactor: number,
     spreadWidth: number = 600,
-    spreadHeight: number = 600,
-    expansionRate: number = 1
+    spreadHeight: number = 600
   ) {
     this.x = x;
     this.y = y;
@@ -34,21 +37,31 @@ export class PointSource {
     this.scaleFactor = scaleFactor;
     this.spreadWidth = spreadWidth;
     this.spreadHeight = spreadHeight;
-    this.expansionRate = expansionRate;
+    this.startPhase = phase;
+
     const periodInPixels = wavelength * scaleFactor;
     this.D = this.calculatePixelsPhase(periodInPixels);
-    this.S = Array.from({ length: momentsCount }, (_, i) =>
-      Math.floor(
-        (255.0 * (Math.sin((2 * Math.PI * i) / momentsCount) + 1)) /
-          (2 * sourcesCount)
-      )
+    this.S = Array.from(
+      { length: momentsCount },
+      (_, i) => Math.sin((2 * Math.PI * i) / momentsCount) / sourcesCount
     );
+
     this.maxRadius = 0;
-    this.color = this.getColorForWavelength(wavelength);
+    this.color = this.getColorForWavelength();
   }
 
   distance(a: [number, number], b: [number, number]): number {
     return Math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2);
+  }
+  switchOn() {
+    if (this.isEnabled) return;
+    this.isEnabled = true;
+
+    this.maxRadius = 0; 
+    this.phase = this.startPhase; 
+  }
+  switchOff() {
+    this.isEnabled = false;
   }
 
   calculatePixelsPhase(periodInPixels: number) {
@@ -63,32 +76,22 @@ export class PointSource {
     );
   }
 
-  createField(f: number[][], t: number) {
-    const MaxI = 100;
-    const periodInPixels = this.wavelength * this.scaleFactor;
-    const shift = Math.floor(((t % periodInPixels) / periodInPixels) * 100);
-    const phaseAdd = Math.floor((this.phase / periodInPixels) * 100);
-    this.maxRadius += this.expansionRate;
+  getAmplitudeAtPoint(x: number, y: number, t: number): number {
+    if (!this.isEnabled) return 0;
 
-    for (let x = 0; x < this.spreadWidth; x++) {
-      for (let y = 0; y < this.spreadHeight; y++) {
-        const dist = this.distance([x, y], [this.x, this.y]);
+    const dist = this.distance([x, y], [this.x, this.y]);
+    if (dist > this.maxRadius) return 0;
 
-        if (dist <= this.maxRadius) {
-          let moment = this.D[x][y] - shift + phaseAdd;
-          moment = moment >= 0 ? moment : moment + MaxI;
-          moment = moment < MaxI ? moment : moment - MaxI;
-          const intensity = this.S[moment];
+    const distancePhase =
+      ((2 * Math.PI * dist) / this.wavelength) * this.scaleFactor;
+    const timeShift = t * ((2 * Math.PI) / this.wavelength);
+    const phaseOffset = this.phase;
 
-          f[x][y] = intensity;
-        } else {
-          f[x][y] = 0;
-        }
-      }
-    }
+    return Math.sin(distancePhase + phaseOffset - timeShift);
   }
 
-  getColorForWavelength(wavelength: number): [number, number, number] {
+  getColorForWavelength(): [number, number, number] {
+    const wavelength = this.wavelength
     if (wavelength < 370 || wavelength > 750) {
       return [255, 255, 255];
     }
@@ -153,23 +156,22 @@ export class PointSource {
   draw(imageData: ImageData, isSelect = false) {
     const pixels = imageData.data;
 
-    
     const verticalStripWidth = 5;
-    for (let i = -verticalStripWidth; i <= verticalStripWidth; i ++) {
+    for (let i = -verticalStripWidth; i <= verticalStripWidth; i++) {
       const dx = this.x + i;
       const dy = this.y;
       if (dx >= 0 && dx < imageData.width && dy >= 0 && dy < imageData.height) {
         const idx = 4 * (dy * imageData.width + dx);
-        pixels[idx] = 255; 
-        pixels[idx + 1] = 0; 
-        pixels[idx + 2] = 0; 
-        pixels[idx + 3] = 255; 
+        pixels[idx] = 255;
+        pixels[idx + 1] = 0;
+        pixels[idx + 2] = 0;
+        pixels[idx + 3] = 255;
       }
     }
 
     if (isSelect) {
       const horizontalStripWidth = 5;
-      for (let i = -horizontalStripWidth; i <= horizontalStripWidth; i ++) {
+      for (let i = -horizontalStripWidth; i <= horizontalStripWidth; i++) {
         const dx = this.x;
         const dy = this.y + i;
         if (
@@ -179,10 +181,10 @@ export class PointSource {
           dy < imageData.height
         ) {
           const idx = 4 * (dy * imageData.width + dx);
-          pixels[idx] = 0; 
-          pixels[idx + 1] = 255; 
-          pixels[idx + 2] = 0; 
-          pixels[idx + 3] = 255; 
+          pixels[idx] = 0;
+          pixels[idx + 1] = 255;
+          pixels[idx + 2] = 0;
+          pixels[idx + 3] = 255;
         }
       }
     }

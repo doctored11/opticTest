@@ -1,15 +1,31 @@
 import { PointSource } from "../../../components/elements/PointSource";
-import { CANVAS_WIDTH, CANVAS_HEIGHT, WAVELENGTH, MOMENTS_COUNT, RADIUS, SCALE_FACTOR, CENTER } from "./constants";
+import { CANVAS_WIDTH, CANVAS_HEIGHT, MOMENTS_COUNT, RADIUS, CENTER } from "./parameters";
+import { SourceSettings } from "../Presenter";
 
-export function createSources(sourceCount: number): { sources: PointSource[], fields: number[][][] } {
-  const sources = Array.from({ length: sourceCount }, (_, i) => {
-    const spacing = CANVAS_HEIGHT / (sourceCount + 1);
+export function createSources(
+  sourceSettings: SourceSettings[],
+  wavelength: number,
+  scaleFactor: number
+): { sources: PointSource[]; fields: number[][][] } {
+  const sources = sourceSettings.map((setting, i) => {
+    const spacing = CANVAS_HEIGHT / (sourceSettings.length + 1);
     const x = CENTER[0];
     const y = Math.round(spacing * (i + 1));
-    return new PointSource(x, y, WAVELENGTH, 0, MOMENTS_COUNT, RADIUS, sourceCount, SCALE_FACTOR, CANVAS_WIDTH, CANVAS_HEIGHT);
+    return new PointSource(
+      x,
+      y,
+      wavelength,
+      setting.phase,  
+      MOMENTS_COUNT,
+      RADIUS,
+      sourceSettings.length,
+      scaleFactor,
+      CANVAS_WIDTH,
+      CANVAS_HEIGHT
+    );
   });
 
-  const fields = new Array(sourceCount).fill(null).map(() =>
+  const fields = sourceSettings.map(() =>
     Array.from({ length: CANVAS_WIDTH }, () => Array(CANVAS_HEIGHT).fill(0))
   );
 
