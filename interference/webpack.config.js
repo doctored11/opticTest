@@ -35,7 +35,7 @@ module.exports = {
                     {
                         loader: 'file-loader',
                         options: {
-                            publicPath: '/',
+                            publicPath: '/opticTest/',
                             outputPath: 'src/',
                             name: '[name].[ext]',
                         },
