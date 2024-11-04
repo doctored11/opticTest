@@ -2,33 +2,23 @@ import React, { useEffect, useRef } from "react";
 import { createSources } from "./createSources";
 import { animateCanvas } from "./animateCanvas";
 import { CANVAS_WIDTH, CANVAS_HEIGHT } from "./parameters";
-
+import { useAppContext } from "../../../context/AppContext";
 import { PointSource } from "../../elements/PointSource";
-import { SourceSettings } from "../Presenter";
 
-interface CanvasProps {
-  showSources: boolean;
-  running: boolean;
-  sourceSettings: SourceSettings[];
-  scaleFactor: number;
-  dt: number;
-  wavelength: number;
-}
+const Canvas: React.FC = () => {
+  const {
+    showSources,
+    running,
+    sourceSettings,
+    generalSettingsParams,
+    dt,
+  } = useAppContext(); 
 
-const Canvas: React.FC<CanvasProps> = ({
-  showSources,
-  running,
-  sourceSettings,
-  scaleFactor,
-  dt,
-  wavelength,
-}) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const amplitudeCanvasRef = useRef<HTMLCanvasElement>(null); 
+  const amplitudeCanvasRef = useRef<HTMLCanvasElement>(null);
 
   const sourcesRef = useRef<PointSource[]>([]);
   const fieldsRef = useRef<number[][][]>([]);
-
   const tRef = useRef(0);
   const animationRef = useRef<number | undefined>();
 
@@ -44,10 +34,19 @@ const Canvas: React.FC<CanvasProps> = ({
   }, []);
 
   useEffect(() => {
-    const { sources, fields } = createSources(sourceSettings, wavelength, scaleFactor);
+    const { sources, fields } = createSources(
+      sourceSettings,
+      generalSettingsParams.wavelength,
+      generalSettingsParams.scaleFactor
+    );
     sourcesRef.current = sources;
     fieldsRef.current = fields;
-  }, [sourceSettings.length, ...sourceSettings.map((el) => el.phase),wavelength,scaleFactor]);
+  }, [
+    sourceSettings.length,
+    ...sourceSettings.map((el) => el.phase),
+    generalSettingsParams.wavelength,
+    generalSettingsParams.scaleFactor,
+  ]);
 
   useEffect(() => {
     function animate() {
@@ -79,13 +78,12 @@ const Canvas: React.FC<CanvasProps> = ({
         animationRef.current = undefined;
       }
     };
-  }, [running, showSources, sourceSettings,dt]);
+  }, [running, showSources, sourceSettings, dt]);
 
   return (
     <div>
       <canvas ref={canvasRef}></canvas>
-      <canvas ref={amplitudeCanvasRef}></canvas>{" "}
-      
+      <canvas ref={amplitudeCanvasRef}></canvas>
     </div>
   );
 };

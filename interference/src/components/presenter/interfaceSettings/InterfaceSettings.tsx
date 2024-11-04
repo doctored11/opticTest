@@ -1,38 +1,23 @@
 import React, { useEffect, useState } from "react";
-import { SourceSettings } from "../Presenter";
+import { useAppContext } from "../../../context/AppContext"; 
 
-interface InterfaceSettingsProps {
-  sourceCount: number;
-  showSources: boolean;
-  running: boolean;
-  onSourceCountChange: (count: number) => void;
-  onShowSourcesChange: (show: boolean) => void;
-  onToggleRunning: () => void;
-  onToggleHighlight: (index: number) => void;
-  onToggleEnabled: (index: number) => void;
-  onUpdatePhase: (index: number, phase: number) => void;
-  sourceSettings: SourceSettings[];
+const InterfaceSettings: React.FC = () => {
+  const {
+    sourceCount,
+    showSources,
+    running,
+    onSourceCountChange,
+    onShowSourcesChange,
+    onToggleRunning,
+    onToggleHighlight,
+    onToggleEnabled,
+    onUpdatePhase,
+    sourceSettings,
+    generalSettingsParams,
+    setWavelength,
+    setScaleFactor,
+  } = useAppContext();
 
-  generalSettingsParams: { wavelength: number; scaleFactor: number };
-  setWavelength: (value: number) => void;
-  setScaleFactor: (value: number) => void;
-}
-
-const InterfaceSettings: React.FC<InterfaceSettingsProps> = ({
-  sourceCount,
-  showSources,
-  running,
-  onSourceCountChange,
-  onShowSourcesChange,
-  onToggleRunning,
-  onToggleHighlight,
-  onToggleEnabled,
-  onUpdatePhase,
-  sourceSettings,
-  generalSettingsParams,
-  setWavelength,
-  setScaleFactor,
-}) => {
   const [sliderValue, setSliderValue] = useState(generalSettingsParams.wavelength);
   let timeoutId: NodeJS.Timeout | undefined;
 
@@ -47,15 +32,10 @@ const InterfaceSettings: React.FC<InterfaceSettingsProps> = ({
     }, 300);
   };
 
- 
-
- 
- 
-
   return (
     <>
       <div id="genSettings">
-      <label>
+        <label>
           Длина волны:
           <input
             type="range"
@@ -80,7 +60,6 @@ const InterfaceSettings: React.FC<InterfaceSettingsProps> = ({
             ))}
           </select>
         </label>
-      
       </div>
 
       <div id="settings">
